@@ -2,8 +2,7 @@
 A django Cython compiler that compiles django projects into C and outputs it to build folder.
 """
 import sys
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import Extension, setup
 from Cython.Distutils import build_ext
 import Cython
 from Cython.Build import cythonize
