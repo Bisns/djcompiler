@@ -1,3 +1,4 @@
+from configparser import ConfigParser
 from djcompiler.management.command import BaseCommand
 from djcompiler.management.command import buildfile
 from djcompiler.compiler.djcompiler import DjangoCompiler
@@ -10,16 +11,17 @@ class CompileProject(BaseCommand):
 
     def intial_configs(self):
         try:
-            with open(".djcompiler", "r") as f:
-                for line in f.readlines():
-                    line = line.rstrip()
-                    if "#" in line:
-                        continue
-                    line_split = line.split("=")
-                    value = line_split[1]
-                    if len(value.split(" ")) > 1:
-                        value = value.split(" ")
-                    self.config[line_split[0]] = value
+            parser = ConfigParser(
+                interpolation=None, delimiters=("=",), comment_prefixes=("#",), strict=False
+            )
+            parser.optionxform = str
+            with open(".djcompiler", "r", encoding="utf-8") as f:
+                parser.read_string("[djcompiler]\n" + f.read())
+            list_options = {"ignored_dirs", "ignored_files", "other_dirs_needed", "other_files_needed"}
+            self.config = {
+                key: value.split() if key in list_options else value
+                for key, value in parser.items("djcompiler")
+            }
         except FileNotFoundError as e:
             print("The config file couldn't be found type 1 to create it or 0 to finish")
             try:
